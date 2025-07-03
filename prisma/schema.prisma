@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id              Int              @id @default(autoincrement())
+  name            String
+  price           Decimal
+  is_gram         Boolean          @default(false)
+  category_id      Int
+  category        Category         @relation(fields: [category_id], references: [id])
+  orderItems      OrderItem[]
+  productVariants ProductVariant[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          Int         @id @default(autoincrement())
+  product_id   Int
+  product     Product     @relation(fields: [product_id], references: [id])
+  name        String
+  description String?
+  price       Decimal?
+  orderItems   OrderItem[]
+
+  @@map("product_variants")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+
+  @@map("categories")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  password String
+  orders   Order[]
+
+  @@map("users")
+}
+
+model Table {
+  id       Int     @id @default(autoincrement())
+  table_no String
+  orders   Order[]
+
+  @@map("tables")
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  table_id     Int
+  table        Table       @relation(fields: [table_id], references: [id])
+  user_id      Int
+  user         User        @relation(fields: [user_id], references: [id])
+  tax          Decimal
+  total_amount Decimal
+  grand_total  Decimal
+  order_items  OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int             @id @default(autoincrement())
+  product_id Int
+  product    Product         @relation(fields: [product_id], references: [id])
+  order_id   Int
+  order      Order           @relation(fields: [order_id], references: [id])
+  variant_id Int
+  variant    ProductVariant? @relation(fields: [variant_id], references: [id])
+
+  @@map("order_items")
+}
