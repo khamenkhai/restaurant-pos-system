@@ -2,6 +2,9 @@ import express, { Application, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { AppError } from './utils/app-error';
 import { errorHandler } from './middlewares/errorHandler';
+import categoryRoutes from './routes/categoryRoute';
+import productRoutes from './routes/product';
+// import { seedDatabase } from './routes/seeder';
 
 // Load environment variables
 dotenv.config();
@@ -13,13 +16,20 @@ const app: Application = express();
 const PORT: number = parseInt(process.env.PORT || '5000', 10);
 const APP_NAME: string = process.env.APP_NAME || 'MyApp';
 
+app.use(express.json());
+
+app.use(categoryRoutes);
+app.use(productRoutes);
+// app.get("/seeders",seedDatabase);
+
 // Define a basic route with typed req/res
 app.get('/', (_req: Request, res: Response): void => {
   res.send(`Welcome to ${APP_NAME}`);
 });
 
+
 // 404 handler
-app.use((_req : Request, _res : Response, next) => {
+app.use((_req: Request, _res: Response, next) => {
   next(new AppError('Route not found', 404));
 });
 

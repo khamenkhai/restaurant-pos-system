@@ -17,9 +17,9 @@ datasource db {
 model Product {
   id              Int              @id @default(autoincrement())
   name            String
-  price           Decimal
+  price           Int
   is_gram         Boolean          @default(false)
-  category_id      Int
+  category_id     Int
   category        Category         @relation(fields: [category_id], references: [id])
   orderItems      OrderItem[]
   productVariants ProductVariant[]
@@ -29,19 +29,19 @@ model Product {
 
 model ProductVariant {
   id          Int         @id @default(autoincrement())
-  product_id   Int
+  product_id  Int
   product     Product     @relation(fields: [product_id], references: [id])
   name        String
   description String?
-  price       Decimal?
-  orderItems   OrderItem[]
+  price       Int?
+  orderItems  OrderItem[]
 
   @@map("product_variants")
 }
 
 model Category {
   id       Int       @id @default(autoincrement())
-  name     String
+  name     String    @unique
   products Product[]
 
   @@map("categories")
