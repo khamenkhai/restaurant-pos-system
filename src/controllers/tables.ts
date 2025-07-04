@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "../../generated/prisma";
 import { sendResponse } from "../utils/response";
+import { prismaClient } from "../utils/prismaClient";
 
-const prisma = new PrismaClient();
+
 
 // Create Table
 export const createTable = async (
@@ -14,10 +15,10 @@ export const createTable = async (
     const { table_no } = req.body;
 
     if (!table_no || typeof table_no !== "string") {
-       res.status(400).json({ message: "Invalid table number" });
+      res.status(400).json({ message: "Invalid table number" });
     }
 
-    const table = await prisma.table.create({
+    const table = await prismaClient.table.create({
       data: {
         table_no: table_no.trim(),
       },
@@ -37,7 +38,7 @@ export const getAllTables = async (
   next: NextFunction
 ) => {
   try {
-    const data = await prisma.table.findMany({});
+    const data = await prismaClient.table.findMany({});
     sendResponse(res, 200, "Tables fetched successfully!", data);
   } catch (error) {
     console.error("!![getAllTables] Error:", error);
@@ -55,17 +56,17 @@ export const getTableById = async (
     const tableId = Number(req.params.id);
 
     if (isNaN(tableId)) {
-       res.status(400).json({ message: "Invalid table ID" });
+      res.status(400).json({ message: "Invalid table ID" });
     }
 
-    const table = await prisma.table.findUnique({
+    const table = await prismaClient.table.findUnique({
       where: {
         id: tableId,
       },
     });
 
     if (!table) {
-       res.status(404).json({ message: "Table not found" });
+      res.status(404).json({ message: "Table not found" });
     }
 
     sendResponse(res, 200, "Table fetched successfully!", table);
@@ -86,10 +87,10 @@ export const updateTable = async (
     const { table_no } = req.body;
 
     if (isNaN(tableId) || !table_no || typeof table_no !== "string") {
-       res.status(400).json({ message: "Invalid input data" });
+      res.status(400).json({ message: "Invalid input data" });
     }
 
-    const updatedTable = await prisma.table.update({
+    const updatedTable = await prismaClient.table.update({
       where: { id: tableId },
       data: { table_no: table_no.trim() },
     });
@@ -111,10 +112,10 @@ export const deleteTable = async (
     const tableId = Number(req.params.id);
 
     if (isNaN(tableId)) {
-       res.status(400).json({ message: "Invalid table ID" });
+      res.status(400).json({ message: "Invalid table ID" });
     }
 
-    await prisma.table.delete({
+    await prismaClient.table.delete({
       where: { id: tableId },
     });
 
@@ -122,5 +123,28 @@ export const deleteTable = async (
   } catch (error: any) {
     console.error("!![deleteTable] Error:", error);
     next(error);
+  }
+};
+
+
+export const seedTables = async () => {
+  try {
+    const dummyTables = [
+      { table_no: "T-001" },
+      { table_no: "T-002" },
+      { table_no: "T-003" },
+      { table_no: "T-004" },
+      { table_no: "T-005" },
+    ];
+
+    for (const table of dummyTables) {
+      await prismaClient.table.create({ data: table });
+    }
+
+    console.log("✅ Tables seeded successfully!");
+  } catch (error) {
+    console.error("❌ Failed to seed tables:", error);
+  } finally {
+    await prismaClient.$disconnect();
   }
 };

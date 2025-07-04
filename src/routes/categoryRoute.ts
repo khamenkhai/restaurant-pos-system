@@ -1,5 +1,4 @@
-import { get } from "http";
-import { createCategory, getCategoryById, getCategories, deleteCategory, updateCategory } from "../controllers/category";
+import { createCategory, getCategoryById, getCategories, deleteCategory, updateCategory, seedCategoriesAndProducts } from "../controllers/category";
 import { Router } from "express";
 
 const categoryRoutes = Router();
@@ -9,5 +8,6 @@ categoryRoutes.get("/categories/:id", getCategoryById);
 categoryRoutes.post("/categories", createCategory);
 categoryRoutes.put("/categories/:id", updateCategory);
 categoryRoutes.delete("/categories/:id", deleteCategory);
+categoryRoutes.post("/seedCategories", seedCategoriesAndProducts);
 
 export default categoryRoutes;

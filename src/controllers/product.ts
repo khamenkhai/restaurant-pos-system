@@ -1,9 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { sendResponse } from "../utils/response";
-import { PrismaClient } from "../../generated/prisma";
-import { AppError } from "../utils/app-error";
 import { prismaClient } from "../utils/prismaClient";
-
 
 
 export const createProduct = async (
@@ -14,9 +11,9 @@ export const createProduct = async (
   try {
     const { name, description, price, variants, categoryId } = req.body;
 
-    if (categoryId === undefined || typeof categoryId !== "number") {
-      next(new AppError("Valid category id is required!"))
-      // res.status(400).json({ message: "Valid categoryId is required" });
+    if (categoryId === undefined ) {
+      // next(new AppError("Valid category id is required!"))
+      res.status(400).json({ message: "Valid categoryId is required" });
     }
     // Basic validation
     if (!name || typeof name !== "string") {
@@ -39,15 +36,15 @@ export const createProduct = async (
       data: {
         name: name.trim(),
         price: price,
-        category_id: categoryId,
+        category_id: +categoryId,
         productVariants: variants
           ? {
-              create: variants.map((variant: any) => ({
-                name: variant.name,
-                description: variant.description,
-                price: variant.price,
-              })),
-            }
+            create: variants.map((variant: any) => ({
+              name: variant.name,
+              description: variant.description,
+              price: variant.price,
+            })),
+          }
           : undefined,
       },
       include: {

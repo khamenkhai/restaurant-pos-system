@@ -3,7 +3,9 @@ import dotenv from 'dotenv';
 import { AppError } from './utils/app-error';
 import { errorHandler } from './middlewares/errorHandler';
 import categoryRoutes from './routes/categoryRoute';
-import productRoutes from './routes/product';
+import productRoutes from './routes/productRoute';
+import tableRoutes from './routes/tableRoute';
+import authRoutes from './routes/authRoute';
 // import { seedDatabase } from './routes/seeder';
 
 // Load environment variables
@@ -20,6 +22,8 @@ app.use(express.json());
 
 app.use(categoryRoutes);
 app.use(productRoutes);
+app.use(tableRoutes);
+app.use(authRoutes);
 // app.get("/seeders",seedDatabase);
 
 // Define a basic route with typed req/res
