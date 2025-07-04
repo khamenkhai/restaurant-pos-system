@@ -1,4 +1,3 @@
-import { get } from "http";
 import {
   createProduct,
   getProductById,
@@ -7,8 +6,11 @@ import {
   updateProduct,
 } from "../controllers/product";
 import { Router } from "express";
+import authMiddleware from "../middlewares/authMiddleware";
 
 const productRoutes = Router();
+
+// productRoutes.use(authMiddleware);
 
 productRoutes.get("/products", getProducts);
 productRoutes.get("/products/:id", getProductById);

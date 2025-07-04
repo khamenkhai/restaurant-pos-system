@@ -1,7 +1,10 @@
 import { createCategory, getCategoryById, getCategories, deleteCategory, updateCategory, seedCategoriesAndProducts } from "../controllers/category";
 import { Router } from "express";
+import authMiddleware from "../middlewares/authMiddleware";
 
 const categoryRoutes = Router();
+
+// categoryRoutes.use(authMiddleware);
 
 categoryRoutes.get("/categories", getCategories);
 categoryRoutes.get("/categories/:id", getCategoryById);

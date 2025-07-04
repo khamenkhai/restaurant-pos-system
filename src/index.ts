@@ -6,6 +6,7 @@ import categoryRoutes from './routes/categoryRoute';
 import productRoutes from './routes/productRoute';
 import tableRoutes from './routes/tableRoute';
 import authRoutes from './routes/authRoute';
+import orderRoutes from './routes/orderRoute';
 // import { seedDatabase } from './routes/seeder';
 
 // Load environment variables
@@ -24,6 +25,7 @@ app.use(categoryRoutes);
 app.use(productRoutes);
 app.use(tableRoutes);
 app.use(authRoutes);
+app.use(orderRoutes);
 // app.get("/seeders",seedDatabase);
 
 // Define a basic route with typed req/res
