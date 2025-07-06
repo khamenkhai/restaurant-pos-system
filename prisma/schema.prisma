@@ -40,9 +40,10 @@ model ProductVariant {
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  products Product[]
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String    @default("")
+  products    Product[]
 
   @@map("categories")
 }
@@ -75,8 +76,22 @@ model Order {
   total_amount Decimal
   grand_total  Decimal
   order_items  OrderItem[]
+  buffet_id    Int?
+  buffet       Buffet?     @relation(fields: [buffet_id], references: [id])
+  people_count Int?
+  is_buffet    Boolean     @default(false)
 
   @@map("orders")
+}
+
+model Buffet {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal
+  orders      Order[]
+
+  @@map("buffets")
 }
 
 model OrderItem {

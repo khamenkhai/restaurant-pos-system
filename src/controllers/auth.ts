@@ -52,11 +52,12 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     res.json({
         message: "Login successful",
-        user: {
+        data: {
             id: user.id,
             name: user.name,
             email: user.email,
-            token: token
+            access_token: token
         },
     });
 }
+

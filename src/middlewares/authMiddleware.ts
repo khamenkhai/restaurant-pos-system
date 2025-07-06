@@ -12,6 +12,7 @@ interface JwtPayload {
 // Define your User type based on Prisma model (adjust according to your actual schema)
 type User = {
   id: number;
+  name: string;
   email: string;
   // Add other user properties from your schema
 };

@@ -2,7 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 import { AppError } from "../utils/app-error";
-import { CreateOrderSchema } from "../validators/schema";
+import {
+  CreateOrderSchema,
+  CreateBuffetOrderSchema,
+} from "../validators/schema";
 
 export const createOrder = async (
   req: Request,
@@ -83,6 +86,60 @@ export const createOrder = async (
       req.user?.id,
       error
     );
+    next(error);
+  }
+};
+
+export const createBuffetOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    // Validate body
+    const parsed = CreateBuffetOrderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const formattedErrors = parsed.error.flatten().fieldErrors;
+      console.error(
+        "[createBuffetOrder] Validation failed for user %s:",
+        userId
+      );
+      console.table(formattedErrors);
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: formattedErrors,
+      });
+    }
+
+    const { table_id, tax, buffet_price, people_count } = req.body;
+
+    const total_amount = buffet_price * people_count;
+    const grand_total = total_amount + (tax || 0);
+
+    const order = await prismaClient.order.create({
+      data: {
+        table_id: table_id,
+        user_id: userId,
+        is_buffet: true,
+        tax: tax,
+        total_amount: total_amount,
+        grand_total: grand_total,
+        people_count: people_count,
+      },
+    });
+
+    res.status(201).json({
+      statusCode: 201,
+      message: "Buffet order created successfully",
+      data: order,
+    });
+  } catch (error: any) {
+    console.error("[createBuffetOrder] Error creating buffet order:", error);
     next(error);
   }
 };

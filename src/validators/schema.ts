@@ -13,3 +13,11 @@ export const CreateOrderSchema = z.object({
 });
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
+
+// Validate buffet order request
+export const CreateBuffetOrderSchema = z.object({
+  table_id: z.number(),
+  buffet_id: z.number(),
+  people_count: z.number().min(1),
+  tax: z.number().optional(),
+});
