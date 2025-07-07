@@ -62,14 +62,14 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-app.listen(PORT, "192.168.100.203", (): void => {
-  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-  console.log(
-    `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
-  );
-});
-
-// // Start the server
-// app.listen(PORT, (): void => {
+// app.listen(PORT, "192.168.100.203", (): void => {
 //   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+//   console.log(
+//     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
+//   );
 // });
+
+// Start the server
+app.listen(PORT, (): void => {
+  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+});

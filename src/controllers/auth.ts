@@ -61,3 +61,23 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     });
 }
 
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+        throw new AppError("Unauthorized", 401);
+    }
+
+    const user = await prismaClient.user.findUnique({
+        where: { id: userId },
+    });
+
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    res.json({
+        message: "User profile retrieved successfully",
+        data: user,
+    });
+};

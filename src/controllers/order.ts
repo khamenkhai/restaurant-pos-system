@@ -116,7 +116,7 @@ export const createBuffetOrder = async (
       });
     }
 
-    const { table_id, tax, buffet_price, people_count } = req.body;
+    const { table_id, tax, buffet_price, people_count, buffet_id } = req.body;
 
     const total_amount = buffet_price * people_count;
     const grand_total = total_amount + (tax || 0);
@@ -127,6 +127,7 @@ export const createBuffetOrder = async (
         user_id: userId,
         is_buffet: true,
         tax: tax,
+        buffet_id: buffet_id,
         total_amount: total_amount,
         grand_total: grand_total,
         people_count: people_count,
