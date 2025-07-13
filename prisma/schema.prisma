@@ -16,9 +16,13 @@ datasource db {
 
 enum OrderStatus {
   pending
-  preparing
   completed
   cancelled
+}
+
+enum TableStatus {
+  available
+  unavailable
 }
 
 model Product {
@@ -66,9 +70,10 @@ model User {
 }
 
 model Table {
-  id       Int     @id @default(autoincrement())
+  id       Int         @id @default(autoincrement())
   table_no String
   orders   Order[]
+  status   TableStatus @default(available)
 
   @@map("tables")
 }

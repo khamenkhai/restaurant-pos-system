@@ -2,8 +2,9 @@ import {
   getOrders,
   getOrderById,
   createOrder,
-  updateOrder,
+  addMoreProductsToOrder,
   deleteOrder,
+  checkoutOrder,
 } from "../controllers/order";
 import { Router } from "express";
 import authMiddleware from "../middlewares/authMiddleware";
@@ -15,7 +16,8 @@ const orderRoutes = Router();
 orderRoutes.get("/orders", getOrders);
 orderRoutes.get("/orders/:id", getOrderById);
 orderRoutes.post("/orders", authMiddleware, createOrder);
-orderRoutes.put("/orders/:id", updateOrder);
+orderRoutes.post("/orders/checkout/:id", authMiddleware, checkoutOrder);
+orderRoutes.put("/orders/:id", authMiddleware, addMoreProductsToOrder);
 orderRoutes.delete("/orders/:id", deleteOrder);
 
 export default orderRoutes;

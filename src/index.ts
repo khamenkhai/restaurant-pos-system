@@ -7,6 +7,7 @@ import productRoutes from "./routes/productRoute";
 import tableRoutes from "./routes/tableRoute";
 import authRoutes from "./routes/authRoute";
 import orderRoutes from "./routes/orderRoute";
+import historyRoutes from "./routes/historyRoute";
 // import { seedDatabase } from './routes/seeder';
 
 // Load environment variables
@@ -26,6 +27,7 @@ app.use(productRoutes);
 app.use(tableRoutes);
 app.use(authRoutes);
 app.use(orderRoutes);
+app.use(historyRoutes);
 // app.get("/seeders",seedDatabase);
 
 // Define a basic route with typed req/res
@@ -41,13 +43,6 @@ app.use((_req: Request, _res: Response, next) => {
 // Global error handler
 app.use(errorHandler);
 
-// Start the server
-app.listen(PORT, "0.0.0.0", (): void => {
-  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-  console.log(
-    `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
-  );
-});
 
 // Helper function to get local IP address
 function getLocalIpAddress(): string {

@@ -72,6 +72,12 @@ export const createOrder = async (
           order_items: true,
         },
       });
+
+      await prisma.table.update({
+        where: { id: order.table_id },
+        data: { status: "unavailable" },
+      });
+
       return order;
     });
 
@@ -86,6 +92,61 @@ export const createOrder = async (
       req.user?.id,
       error
     );
+    next(error);
+  }
+};
+
+export const checkoutOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    const order_id = req.params.id;
+
+    const order = await prismaClient.order.findUnique({
+      where: { id: +order_id },
+      include: { table: true },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending orders can be checked out" });
+    }
+
+    const updatedOrder = await prismaClient.$transaction(async (prisma) => {
+      const updated = await prisma.order.update({
+        where: { id: +order_id },
+        data: { status: "completed" },
+      });
+
+      // Optionally free the table after checkout
+      await prisma.table.update({
+        where: { id: order.table_id },
+        data: { status: "available" },
+      });
+
+      return updated;
+    });
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "Order checked out successfully",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error("[checkoutOrder] Error checking out order:", error);
     next(error);
   }
 };
@@ -151,14 +212,12 @@ export const getOrders = async (
   next: NextFunction
 ) => {
   try {
-    const products = await prismaClient.product.findMany({
-      include: {
-        productVariants: true,
-      },
+    const orders = await prismaClient.order.findMany({
+      include: {},
     });
-    sendResponse(res, 200, "Products fetched successfully!", products);
+    sendResponse(res, 200, "Orders fetched successfully!", orders);
   } catch (error) {
-    console.error("[getProducts] Error:", error);
+    console.error("[getOrders] Error:", error);
     next(error);
   }
 };
@@ -169,64 +228,126 @@ export const getOrderById = async (
   next: NextFunction
 ) => {
   try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid product ID" });
+    const orderId = parseInt(req.params.id);
+
+    if (isNaN(orderId)) {
+      res.status(400).json({ message: "Invalid order ID" });
     }
 
-    const product = await prismaClient.product.findUnique({
-      where: { id },
-      include: { productVariants: true },
+    const order = await prismaClient.order.findUnique({
+      where: { id: orderId },
+      include: {
+        order_items: {
+          include: {
+            product: true,
+          },
+        },
+        table: true,
+        user: true,
+        buffet: true,
+      },
     });
 
-    if (!product) {
-      res.status(404).json({ message: "Product not found" });
+    if (!order) {
+      res.status(404).json({ message: "Order not found" });
     }
 
-    sendResponse(res, 200, "Product fetched successfully!", product);
+    res.status(200).json({
+      statusCode: 200,
+      message: "Order retrieved successfully",
+      data: order,
+    });
   } catch (error) {
-    console.error("[getProductById] Error:", error);
+    console.error("[getOrderById] Error fetching order:", error);
     next(error);
   }
 };
 
-export const updateOrder = async (
+export const addMoreProductsToOrder = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid product ID" });
+    const userId = req.user?.id;
+    const orderId = parseInt(req.params.id);
+
+    if (!userId) {
+      throw new AppError("Authentication required", 401);
     }
 
-    const { name, description, price } = req.body;
-
-    // Validate inputs if provided
-    if (name !== undefined && typeof name !== "string") {
-      res.status(400).json({ message: "Name must be a string" });
-    }
-    if (description !== undefined && typeof description !== "string") {
-      res.status(400).json({ message: "Description must be a string" });
-    }
-    if (price !== undefined && typeof price !== "number") {
-      res.status(400).json({ message: "Price must be a number" });
+    if (isNaN(orderId)) {
+      res.status(400).json({ message: "Invalid order ID" });
     }
 
-    const updatedProduct = await prismaClient.product.update({
-      where: { id },
-      data: {
-        ...(name && { name: name.trim() }),
-        ...(description && { description: description.trim() }),
-        ...(price !== undefined && { price }),
-      },
-      include: { productVariants: true },
+    const { additional_items } = req.body; // Array of { product_id, variant_id, quantity }
+
+    if (!Array.isArray(additional_items) || additional_items.length === 0) {
+      res.status(400).json({ message: "No additional items provided" });
+    }
+
+    const updatedOrder = await prismaClient.$transaction(async (prisma) => {
+      // Get original order
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { order_items: true },
+      });
+
+      if (!order) {
+        throw new AppError("Order not found", 404);
+      }
+
+      if (order.status !== "pending") {
+        throw new AppError("Only pending orders can be updated", 400);
+      }
+
+      // Fetch prices for new products
+      const additionalPrices = await Promise.all(
+        additional_items.map(async (item: any) => {
+          const product = await prisma.product.findUnique({
+            where: { id: item.product_id },
+            select: { price: true },
+          });
+          return product ? product.price * item.quantity : 0;
+        })
+      );
+
+      const additionalAmount = additionalPrices.reduce(
+        (sum, val) => sum + val,
+        0
+      );
+      const newTotal = Number(order.total_amount) + Number(additionalAmount);
+      const newGrandTotal = newTotal + Number(order.tax ?? 0);
+
+      // Update order with new items
+      const result = await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          total_amount: newTotal,
+          grand_total: newGrandTotal,
+          order_items: {
+            create: additional_items.map((item: any) => ({
+              product_id: item.product_id,
+              variant_id: item.variant_id,
+              quantity: item.quantity,
+            })),
+          },
+        },
+        include: {
+          order_items: true,
+        },
+      });
+
+      return result;
     });
 
-    sendResponse(res, 200, "Product updated successfully!", updatedProduct);
-  } catch (error: any) {
-    console.error("[updateProduct] Error:", error);
+    res.status(200).json({
+      statusCode: 200,
+      message: "Order updated with additional products",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error("[addMoreProductsToOrder] Error updating order:", error);
     next(error);
   }
 };

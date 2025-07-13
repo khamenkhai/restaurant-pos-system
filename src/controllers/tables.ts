@@ -3,8 +3,6 @@ import { PrismaClient } from "../../generated/prisma";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 
-
-
 // Create Table
 export const createTable = async (
   req: Request,
@@ -31,15 +29,36 @@ export const createTable = async (
   }
 };
 
-// Get All Tables
 export const getAllTables = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+) : Promise<void> => {
   try {
-    const data = await prismaClient.table.findMany({});
-    sendResponse(res, 200, "Tables fetched successfully!", data);
+    const tables = await prismaClient.table.findMany({
+      include: {
+        orders: {
+          where: {
+            status: "pending", // Only get the current active order
+          },
+          select: {
+            id: true,
+            status: true,
+          },
+          take: 1, // Assuming one active order per table
+        },
+      },
+    });
+
+    // Map to include `current_order_id`
+    const formattedTables = tables.map((table) => ({
+      id: table.id,
+      table_no: table.table_no,
+      status: table.status,
+      current_order_id: table.orders[0]?.id ?? null,
+    }));
+
+    sendResponse(res, 200, "Tables fetched successfully!", formattedTables);
   } catch (error) {
     console.error("!![getAllTables] Error:", error);
     next(error);
@@ -125,7 +144,6 @@ export const deleteTable = async (
     next(error);
   }
 };
-
 
 export const seedTables = async () => {
   try {

@@ -1,83 +1,96 @@
 import { NextFunction, Request, Response } from "express";
 import { prismaClient } from "../utils/prismaClient";
 import { AppError } from "../utils/app-error";
-import { hashSync, compareSync } from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { hashSync, compareSync } from "bcrypt";
+import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "SECRET"
+const JWT_SECRET = process.env.JWT_SECRET || "SECRET";
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { name, email, password } = req.body;
 
-    const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    throw new AppError("Name, email and password are required!", 400);
+  }
 
-    let user = await prismaClient.user.findFirst({ where: { email: email } });
+  let user = await prismaClient.user.findFirst({ where: { email: email } });
 
-    if (user) {
-        throw new AppError("User already existed!", 500);
-    }
+  if (user) {
+    throw new AppError("User already existed!", 500);
+  }
 
-    const hasedPassword = hashSync(password, 10);
+  const hasedPassword = hashSync(password, 10);
 
-    user = await prismaClient.user.create({
-        data: {
-            name: name,
-            email: email,
-            password: hasedPassword
-        }
-    });
+  user = await prismaClient.user.create({
+    data: {
+      name: name,
+      email: email,
+      password: hasedPassword,
+    },
+  });
 
-    res.status(201).json({
-        statusCode: 201,
-        message: "User",
-        data: user
-    });
-}
+  res.status(201).json({
+    statusCode: 201,
+    message: "User",
+    data: user,
+  });
+};
 
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, password } = req.body;
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+  let user = await prismaClient.user.findFirst({ where: { email } });
 
-    const { email, password } = req.body;
+  if (!user) {
+    throw new AppError("User does not existed!", 409);
+  }
 
-    let user = await prismaClient.user.findFirst({ where: { email } });
+  if (!compareSync(password, user.password)) {
+    throw new AppError("Incorrect password!", 409);
+  }
 
-    if (!user) {
-        throw new AppError("User does not existed!", 409);
-    }
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
 
-    if (!compareSync(password, user.password)) {
-        throw new AppError("Incorrect password!", 409);
-    }
+  res.json({
+    message: "Login successful",
+    data: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      access_token: token,
+    },
+  });
+};
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1d' });
+export const getProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user?.id;
 
-    res.json({
-        message: "Login successful",
-        data: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            access_token: token
-        },
-    });
-}
+  if (!userId) {
+    throw new AppError("Unauthorized", 401);
+  }
 
-export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.user?.id;
+  const user = await prismaClient.user.findUnique({
+    where: { id: userId },
+  });
 
-    if (!userId) {
-        throw new AppError("Unauthorized", 401);
-    }
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
 
-    const user = await prismaClient.user.findUnique({
-        where: { id: userId },
-    });
-
-    if (!user) {
-        throw new AppError("User not found", 404);
-    }
-
-    res.json({
-        message: "User profile retrieved successfully",
-        data: user,
-    });
+  res.json({
+    message: "User profile retrieved successfully",
+    data: user,
+  });
 };

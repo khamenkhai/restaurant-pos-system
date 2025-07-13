@@ -8,10 +8,10 @@ import {
   getOrderHistoryById,
 } from "../controllers/history";
 
-const router = express.Router();
+const historyRoutes = express.Router();
 
-router.get("/", authMiddleware, getOrderHistory);
-router.get("/table/:tableId", authMiddleware, getOrderHistoryByTable);
-router.get("/:id", authMiddleware, getOrderHistoryById);
+historyRoutes.get("/histories", authMiddleware, getOrderHistory);
+historyRoutes.get("/table/:tableId", authMiddleware, getOrderHistoryByTable);
+historyRoutes.get("/:id", authMiddleware, getOrderHistoryById);
 
-export default router;
+export default historyRoutes;
