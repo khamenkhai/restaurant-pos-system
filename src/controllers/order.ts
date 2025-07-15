@@ -141,7 +141,7 @@ export const checkoutOrder = async (
     });
 
     res.status(200).json({
-      statusCode: 200,
+      status: true,
       message: "Order checked out successfully",
       data: updatedOrder,
     });
@@ -231,7 +231,7 @@ export const getOrderById = async (
     const orderId = parseInt(req.params.id);
 
     if (isNaN(orderId)) {
-      res.status(400).json({ message: "Invalid order ID" });
+      res.status(400).json({ message: "Invalid order ID 2" });
     }
 
     const order = await prismaClient.order.findUnique({
@@ -277,7 +277,7 @@ export const addMoreProductsToOrder = async (
     }
 
     if (isNaN(orderId)) {
-      res.status(400).json({ message: "Invalid order ID" });
+      res.status(400).json({ message: "Invalid order ID 3" });
     }
 
     const { additional_items } = req.body; // Array of { product_id, variant_id, quantity }

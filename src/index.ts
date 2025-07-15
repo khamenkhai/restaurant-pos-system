@@ -8,6 +8,7 @@ import tableRoutes from "./routes/tableRoute";
 import authRoutes from "./routes/authRoute";
 import orderRoutes from "./routes/orderRoute";
 import historyRoutes from "./routes/historyRoute";
+import reportRoutes from "./routes/report";
 // import { seedDatabase } from './routes/seeder';
 
 // Load environment variables
@@ -27,6 +28,7 @@ app.use(productRoutes);
 app.use(tableRoutes);
 app.use(authRoutes);
 app.use(orderRoutes);
+app.use(reportRoutes);
 app.use(historyRoutes);
 // app.get("/seeders",seedDatabase);
 
