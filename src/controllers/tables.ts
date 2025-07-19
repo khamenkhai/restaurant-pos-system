@@ -33,13 +33,54 @@ export const getAllTables = async (
   req: Request,
   res: Response,
   next: NextFunction
-) : Promise<void> => {
+): Promise<void> => {
   try {
     const tables = await prismaClient.table.findMany({
       include: {
         orders: {
           where: {
-            status: "pending", // Only get the current active order
+            status: "pending", // Only get pending orders (active orders)
+          },
+          select: {
+            id: true,
+            status: true,
+          },
+          take: 1, // Get only the most recent pending order
+        },
+      },
+    });
+
+    // Map tables with current_order_id only if there's a pending order
+    const formattedTables = tables.map((table) => {
+      const hasPendingOrder =
+        table.orders.length > 0 && table.orders[0].status === "pending";
+
+      return {
+        id: table.id,
+        table_no: table.table_no,
+        status: hasPendingOrder ? "unavailable" : "available", // Update table status based on order
+        current_order_id: hasPendingOrder ? table.orders[0].id : null,
+      };
+    });
+
+    sendResponse(res, 200, "Tables fetched successfully!", formattedTables);
+  } catch (error) {
+    console.error("!![getAllTables] Error:", error);
+    next(error);
+  }
+};
+
+export const getAllTables2 = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tables = await prismaClient.table.findMany({
+      include: {
+        orders: {
+          where: {
+            status: "pending",
           },
           select: {
             id: true,

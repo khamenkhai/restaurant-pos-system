@@ -10,7 +10,6 @@ import authMiddleware from "../middlewares/authMiddleware";
 
 const productRoutes = Router();
 
-// productRoutes.use(authMiddleware);
 
 productRoutes.get("/products", getProducts);
 productRoutes.get("/products/:id", getProductById);

@@ -4,7 +4,6 @@ import authMiddleware from "../middlewares/authMiddleware";
 
 const categoryRoutes = Router();
 
-// categoryRoutes.use(authMiddleware);
 
 categoryRoutes.get("/categories", getCategories);
 categoryRoutes.get("/categories/:id", getCategoryById);

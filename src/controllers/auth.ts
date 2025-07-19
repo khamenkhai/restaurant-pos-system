@@ -57,7 +57,7 @@ export const login = async (
     throw new AppError("Incorrect password!", 409);
   }
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "2d" });
 
   res.json({
     message: "Login successful",

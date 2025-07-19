@@ -108,6 +108,14 @@ export const checkoutOrder = async (
       throw new AppError("Authentication required", 401);
     }
 
+    const { method_id, notes } = req.body;
+
+    if (!notes || !method_id) {
+      return res
+        .status(400)
+        .json({ message: "Payment method and notes required" });
+    }
+
     const order_id = req.params.id;
 
     const order = await prismaClient.order.findUnique({
@@ -126,7 +134,29 @@ export const checkoutOrder = async (
     }
 
     const updatedOrder = await prismaClient.$transaction(async (prisma) => {
+      const payment = await prisma.payment.create({
+        data: {
+          order_id: +order_id,
+          amount: order.grand_total,
+          payment_method_id: method_id,
+          notes: notes,
+        },
+      });
+
       const updated = await prisma.order.update({
+        include: {
+          order_items: {
+            include : {
+              product : true
+            }
+          },
+          payment: {
+            include: {
+              payment_method: true,
+            },
+          },
+          
+        },
         where: { id: +order_id },
         data: { status: "completed" },
       });

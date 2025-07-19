@@ -9,7 +9,9 @@ import authRoutes from "./routes/authRoute";
 import orderRoutes from "./routes/orderRoute";
 import historyRoutes from "./routes/historyRoute";
 import reportRoutes from "./routes/report";
-// import { seedDatabase } from './routes/seeder';
+import cors from "cors";
+import paymentMethodRoutes from "./routes/paymentMethod";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +23,13 @@ const app: Application = express();
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
 const APP_NAME: string = process.env.APP_NAME || "MyApp";
 
+
 app.use(express.json());
+
+// Serve static files from the 'public' directory
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
+
+app.use(cors());
 
 app.use(categoryRoutes);
 app.use(productRoutes);
@@ -30,7 +38,9 @@ app.use(authRoutes);
 app.use(orderRoutes);
 app.use(reportRoutes);
 app.use(historyRoutes);
+app.use(paymentMethodRoutes);
 // app.get("/seeders",seedDatabase);
+
 
 // Define a basic route with typed req/res
 app.get("/", (_req: Request, res: Response): void => {
@@ -59,14 +69,15 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-// app.listen(PORT, "192.168.100.203", (): void => {
-//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-//   console.log(
-//     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
-//   );
-// });
+app.listen(PORT, "192.168.100.203", (): void => {
+  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+  console.log(
+    `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
+  );
+});
+
 
 // Start the server
-app.listen(PORT, (): void => {
-  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-});
+// app.listen(PORT, (): void => {
+//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+// });
