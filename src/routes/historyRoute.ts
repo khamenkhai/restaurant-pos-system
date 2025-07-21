@@ -1,16 +1,15 @@
-// routes/orderHistory.routes.ts
 import express from "express";
 
 import authMiddleware from "../middlewares/authMiddleware";
 import {
   getOrderHistory,
-  getOrderHistoryByTable,
-  getOrderHistoryById,
+  searchHistoryByUuid,
 } from "../controllers/history";
 
 const historyRoutes = express.Router();
 
 historyRoutes.get("/histories", authMiddleware, getOrderHistory);
+historyRoutes.get("/histories/:uuid", authMiddleware, searchHistoryByUuid);
 // historyRoutes.get("/table/:tableId", authMiddleware, getOrderHistoryByTable);
 // historyRoutes.get("/:id", authMiddleware, getOrderHistoryById);
 

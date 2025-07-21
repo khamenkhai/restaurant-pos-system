@@ -47,61 +47,28 @@ export const getOrderHistory = async (
   }
 };
 
-// Get history by table
-export const getOrderHistoryByTable = async (
+export const searchHistoryByUuid = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
-    const tableId = Number(req.params.tableId);
-    if (isNaN(tableId)) {
-      res.status(400).json({ message: "Invalid table ID" });
+    const { uuid } = req.params;
+
+    if (!uuid || typeof uuid !== "string") {
+      return res.status(400).json({ message: "Invalid UUID" });
     }
 
-    const orders = await prismaClient.order.findMany({
+    const order = await prismaClient.order.findMany({
       where: {
-        table_id: tableId,
+        uuid: {
+          contains: uuid,
+          mode: "insensitive",
+        },
         status: {
           in: ["completed", "cancelled"],
         },
       },
-      include: {
-        user: true,
-        order_items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-        buffet: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    sendResponse(res, 200, "Table order history fetched successfully!", orders);
-  } catch (error) {
-    console.error("[getOrderHistoryByTable] Error:", error);
-    next(error);
-  }
-};
-
-// Get specific historical order
-export const getOrderHistoryById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid order ID 1" });
-    }
-
-    const order = await prismaClient.order.findUnique({
-      where: { id },
       include: {
         user: true,
         table: true,
@@ -115,15 +82,20 @@ export const getOrderHistoryById = async (
       },
     });
 
-    if (!order || !["completed", "cancelled"].includes(order.status)) {
-      res
+    if (!order) {
+      return res
         .status(404)
         .json({ message: "Order not found or not completed/cancelled" });
     }
 
-    sendResponse(res, 200, "Historical order fetched successfully!", order);
+    sendResponse(
+      res,
+      200,
+      "Order history by UUID fetched successfully!",
+      order
+    );
   } catch (error) {
-    console.error("[getOrderHistoryById] Error:", error);
+    console.error("[getOrderHistoryByUUID] Error:", error);
     next(error);
   }
 };

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 import { AppError } from "../utils/app-error";
+import crypto from "crypto";
 import {
   CreateOrderSchema,
   CreateBuffetOrderSchema,
@@ -53,6 +54,7 @@ export const createOrder = async (
 
       const order = await prisma.order.create({
         data: {
+          uuid: `GT-${crypto.randomBytes(3).toString("hex")}`,
           table_id: table_id,
           user_id: userId,
           tax: tax,
@@ -146,16 +148,15 @@ export const checkoutOrder = async (
       const updated = await prisma.order.update({
         include: {
           order_items: {
-            include : {
-              product : true
-            }
+            include: {
+              product: true,
+            },
           },
           payment: {
             include: {
               payment_method: true,
             },
           },
-          
         },
         where: { id: +order_id },
         data: { status: "completed" },
@@ -177,6 +178,73 @@ export const checkoutOrder = async (
     });
   } catch (error) {
     console.error("[checkoutOrder] Error checking out order:", error);
+    next(error);
+  }
+};
+
+export const cancelOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    const order_id = req.params.id;
+
+    const order = await prismaClient.order.findUnique({
+      where: { id: +order_id },
+      include: { table: true },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending orders can be cancelled!" });
+    }
+
+    const updatedOrder = await prismaClient.$transaction(async (prisma) => {
+      const updated = await prisma.order.update({
+        include: {
+          order_items: {
+            include: {
+              product: true,
+            },
+          },
+          payment: {
+            include: {
+              payment_method: true,
+            },
+          },
+        },
+        where: { id: +order_id },
+        data: { status: "cancelled" },
+      });
+
+      // Optionally free the table after checkout
+      await prisma.table.update({
+        where: { id: order.table_id },
+        data: { status: "available" },
+      });
+
+      return updated;
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "Order cancelled successfully",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error("[cancel order] Error cancelling order:", error);
     next(error);
   }
 };

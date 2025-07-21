@@ -33,7 +33,7 @@ export const getAllTables = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<any> => {
   try {
     const tables = await prismaClient.table.findMany({
       include: {
