@@ -29,6 +29,7 @@ model Product {
   category        Category         @relation(fields: [category_id], references: [id])
   orderItems      OrderItem[]
   productVariants ProductVariant[]
+  is_deleted      Boolean          @default(false)
 
   @@map("products")
 }
@@ -41,6 +42,7 @@ model ProductVariant {
   description String?
   price       Int?
   orderItems  OrderItem[]
+  is_deleted  Boolean     @default(false)
 
   @@map("product_variants")
 }
@@ -50,25 +52,28 @@ model Category {
   name        String    @unique
   description String    @default("")
   products    Product[]
+  is_deleted  Boolean   @default(false)
 
   @@map("categories")
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  name     String
-  email    String  @unique
-  password String
-  orders   Order[]
+  id         Int     @id @default(autoincrement())
+  name       String
+  email      String  @unique
+  password   String
+  orders     Order[]
+  is_deleted Boolean @default(false)
 
   @@map("users")
 }
 
 model Table {
-  id       Int         @id @default(autoincrement())
-  table_no String
-  orders   Order[]
-  status   TableStatus @default(available)
+  id         Int         @id @default(autoincrement())
+  table_no   String
+  orders     Order[]
+  status     TableStatus @default(available)
+  is_deleted Boolean     @default(false)
 
   @@map("tables")
 }
@@ -97,10 +102,11 @@ model Order {
 }
 
 model PaymentMethod {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  image    String?
-  payments Payment[]
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  image      String?
+  payments   Payment[]
+  is_deleted Boolean   @default(false)
 
   @@map("payment_methods")
 }

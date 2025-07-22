@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 
-
 export const createProduct = async (
   req: Request,
   res: Response,
@@ -11,7 +10,7 @@ export const createProduct = async (
   try {
     const { name, description, price, variants, categoryId } = req.body;
 
-    if (categoryId === undefined ) {
+    if (categoryId === undefined) {
       // next(new AppError("Valid category id is required!"))
       res.status(400).json({ message: "Valid categoryId is required" });
     }
@@ -39,12 +38,12 @@ export const createProduct = async (
         category_id: +categoryId,
         productVariants: variants
           ? {
-            create: variants.map((variant: any) => ({
-              name: variant.name,
-              description: variant.description,
-              price: variant.price,
-            })),
-          }
+              create: variants.map((variant: any) => ({
+                name: variant.name,
+                description: variant.description,
+                price: variant.price,
+              })),
+            }
           : undefined,
       },
       include: {
@@ -68,6 +67,10 @@ export const getProducts = async (
     const products = await prismaClient.product.findMany({
       include: {
         productVariants: true,
+        category: true,
+      },
+      where: {
+        is_deleted: false,
       },
     });
     sendResponse(res, 200, "Products fetched successfully!", products);
@@ -156,8 +159,11 @@ export const deleteProduct = async (
       res.status(400).json({ message: "Invalid product ID" });
     }
 
-    await prismaClient.product.delete({
+    await prismaClient.product.update({
       where: { id },
+      data: {
+        is_deleted: true,
+      },
     });
 
     sendResponse(res, 200, "Product deleted successfully!", null);
