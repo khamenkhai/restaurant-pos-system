@@ -5,7 +5,7 @@ import {
   getPaymentMethodById,
   updatePaymentMethod,
   deletePaymentMethod,
-} from "../controllers/paymentMethod";
+} from "../controllers/payment-method";
 import { uploadOptions } from "../middlewares/upload";
 
 const paymentMethodRoutes = Router();

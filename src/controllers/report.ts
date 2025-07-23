@@ -47,7 +47,7 @@ export const getSalesReport = async (
       },
     });
 
-    const totalSales = orders.reduce((sum, order) => sum + Number(order.grand_total), 0);
+    const totalSales = orders.reduce((sum: number, order: { grand_total: any; }) => sum + Number(order.grand_total), 0);
     const totalOrders = orders.length;
 
     const productSalesMap: { [productId: number]: { name: string; quantity: number; total: number } } = {};
@@ -123,7 +123,7 @@ export const getMonthlySalesReport = async (
         },
       });
 
-      const totalSales = orders.reduce((sum, order) => sum + Number(order.grand_total), 0);
+      const totalSales = orders.reduce((sum: number, order: { grand_total: any; }) => sum + Number(order.grand_total), 0);
       const totalOrders = orders.length;
 
       const productSalesMap: { [productId: number]: { name: string; quantity: number; total: number } } = {};

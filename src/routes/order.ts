@@ -12,9 +12,7 @@ import authMiddleware from "../middlewares/authMiddleware";
 
 const orderRoutes = Router();
 
-// orderRoutes.use(authMiddleware);
-
-orderRoutes.get("/orders", getOrders);
+orderRoutes.get("/orders", authMiddleware, getOrders);
 orderRoutes.get("/orders/:id", getOrderById);
 orderRoutes.post("/orders", authMiddleware, createOrder);
 orderRoutes.post("/orders/checkout/:id", authMiddleware, checkoutOrder);

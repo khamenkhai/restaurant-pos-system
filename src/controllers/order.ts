@@ -62,12 +62,12 @@ export const createOrder = async (
           grand_total: grand_total,
           order_items: order_items
             ? {
-                create: order_items.map((item: any) => ({
-                  product_id: item.product_id,
-                  variant_id: item.variant_id,
-                  quantity: item.quantity,
-                })),
-              }
+              create: order_items.map((item: any) => ({
+                product_id: item.product_id,
+                variant_id: item.variant_id,
+                quantity: item.quantity,
+              })),
+            }
             : undefined,
         },
         include: {
@@ -282,6 +282,7 @@ export const createBuffetOrder = async (
 
     const order = await prismaClient.order.create({
       data: {
+        uuid: `GT-${crypto.randomBytes(3).toString("hex")}`,
         table_id: table_id,
         user_id: userId,
         is_buffet: true,

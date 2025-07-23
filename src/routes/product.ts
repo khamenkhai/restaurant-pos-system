@@ -10,11 +10,10 @@ import authMiddleware from "../middlewares/authMiddleware";
 
 const productRoutes = Router();
 
-
 productRoutes.get("/products", getProducts);
 productRoutes.get("/products/:id", getProductById);
-productRoutes.post("/products", createProduct);
-productRoutes.put("/products/:id", updateProduct);
+productRoutes.post("/products", authMiddleware, createProduct);
+productRoutes.put("/products/:id", authMiddleware, updateProduct);
 productRoutes.delete("/products/:id", deleteProduct);
 
 export default productRoutes;

@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { prismaClient } from "../utils/prismaClient";
 import { AppError } from "../utils/app-error";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Define your JWT payload interface
 interface JwtPayload {
@@ -54,7 +56,7 @@ export const authMiddleware = async (
   
   try {
     decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-  } catch (error) {
+  } catch (error : any) {
     // Handle different JWT errors specifically
     if (error instanceof jwt.TokenExpiredError) {
       return next(new AppError("Your token has expired! Please log in again.", 401));

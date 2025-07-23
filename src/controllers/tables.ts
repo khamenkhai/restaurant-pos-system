@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { PrismaClient } from "../../generated/prisma";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 
@@ -51,7 +50,7 @@ export const getAllTables = async (
     });
 
     // Map tables with current_order_id only if there's a pending order
-    const formattedTables = tables.map((table) => {
+    const formattedTables = tables.map((table : any) => {
       const hasPendingOrder =
         table.orders.length > 0 && table.orders[0].status === "pending";
 
@@ -92,7 +91,7 @@ export const getAllTables2 = async (
     });
 
     // Map to include `current_order_id`
-    const formattedTables = tables.map((table) => ({
+    const formattedTables = tables.map((table : any) => ({
       id: table.id,
       table_no: table.table_no,
       status: table.status,

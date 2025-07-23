@@ -2,16 +2,20 @@ import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 import { AppError } from "./utils/app-error";
 import { errorHandler } from "./middlewares/errorHandler";
-import categoryRoutes from "./routes/categoryRoute";
-import productRoutes from "./routes/productRoute";
-import tableRoutes from "./routes/tableRoute";
-import authRoutes from "./routes/authRoute";
-import orderRoutes from "./routes/orderRoute";
-import historyRoutes from "./routes/historyRoute";
+import categoryRoutes from "./routes/category";
+import productRoutes from "./routes/product";
+import tableRoutes from "./routes/table";
+import authRoutes from "./routes/auth";
+import orderRoutes from "./routes/order";
+import historyRoutes from "./routes/history";
 import reportRoutes from "./routes/report";
 import cors from "cors";
-import paymentMethodRoutes from "./routes/paymentMethod";
+import paymentMethodRoutes from "./routes/payment";
 import path from "path";
+import productVariantRoutes from "./routes/productVariant";
+import expenseRoutes from "./routes/expense";
+import buffetRoutes from "./routes/buffets";
+import reservationRoute from "./routes/reservation";
 
 // Load environment variables
 dotenv.config();
@@ -39,7 +43,10 @@ app.use(orderRoutes);
 app.use(reportRoutes);
 app.use(historyRoutes);
 app.use(paymentMethodRoutes);
-// app.get("/seeders",seedDatabase);
+app.use(productVariantRoutes);
+app.use(expenseRoutes);
+app.use(buffetRoutes);
+app.use(reservationRoute);
 
 
 // Define a basic route with typed req/res
@@ -69,15 +76,15 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-app.listen(PORT, "192.168.100.203", (): void => {
-  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-  console.log(
-    `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
-  );
-});
+// app.listen(PORT, "192.168.100.203", (): void => {
+//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+//   console.log(
+//     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
+//   );
+// });
 
 
 // Start the server
-// app.listen(PORT, (): void => {
-//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-// });
+app.listen(PORT, (): void => {
+  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+});

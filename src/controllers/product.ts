@@ -38,12 +38,12 @@ export const createProduct = async (
         category_id: +categoryId,
         productVariants: variants
           ? {
-              create: variants.map((variant: any) => ({
-                name: variant.name,
-                description: variant.description,
-                price: variant.price,
-              })),
-            }
+            create: variants.map((variant: any) => ({
+              name: variant.name,
+              description: variant.description,
+              price: variant.price,
+            })),
+          }
           : undefined,
       },
       include: {
@@ -172,3 +172,4 @@ export const deleteProduct = async (
     next(error);
   }
 };
+

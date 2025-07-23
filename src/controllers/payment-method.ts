@@ -9,10 +9,8 @@ export const createPaymentMethod = async (
   next: NextFunction
 ): Promise<any> => {
   try {
+    
     const { name } = req.body;
-
-    console.log("BODY:", req.body); // Debug: Check what's actually received
-    console.log("FILE:", req.file); // Debug: Check the uploaded fil
 
     if (!name || typeof name !== "string") {
       return res.status(400).json({ message: "Invalid payment method name" });

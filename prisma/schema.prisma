@@ -58,29 +58,31 @@ model Category {
 }
 
 model User {
-  id         Int     @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   name       String
-  email      String  @unique
+  email      String    @unique
   password   String
   orders     Order[]
-  is_deleted Boolean @default(false)
+  is_deleted Boolean   @default(false)
+  expenses   Expense[]
 
   @@map("users")
 }
 
 model Table {
-  id         Int         @id @default(autoincrement())
-  table_no   String
-  orders     Order[]
-  status     TableStatus @default(available)
-  is_deleted Boolean     @default(false)
+  id           Int           @id @default(autoincrement())
+  table_no     String
+  orders       Order[]
+  status       TableStatus   @default(available)
+  is_deleted   Boolean       @default(false)
+  reservations Reservation[]
 
   @@map("tables")
 }
 
 model Order {
   id           Int         @id @default(autoincrement())
-  uuid         String?
+  uuid         String
   table_id     Int
   table        Table       @relation(fields: [table_id], references: [id])
   user_id      Int
@@ -112,13 +114,12 @@ model PaymentMethod {
 }
 
 model Payment {
-  id       Int      @id @default(autoincrement())
-  order_id Int      @unique
-  order    Order    @relation(fields: [order_id], references: [id])
-  amount   Decimal
-  paid_at  DateTime @default(now())
-  notes    String?
-
+  id                Int           @id @default(autoincrement())
+  order_id          Int           @unique
+  order             Order         @relation(fields: [order_id], references: [id])
+  amount            Decimal
+  paid_at           DateTime      @default(now())
+  notes             String?
   payment_method_id Int
   payment_method    PaymentMethod @relation(fields: [payment_method_id], references: [id])
 
@@ -131,6 +132,7 @@ model Buffet {
   description String?
   price       Decimal
   orders      Order[]
+  is_deleted Boolean @default(false)
 
   @@map("buffets")
 }
@@ -146,4 +148,43 @@ model OrderItem {
   quantity   Int
 
   @@map("order_items")
+}
+
+model Reservation {
+  id       Int      @id @default(autoincrement())
+  name     String
+  phone    String
+  date     DateTime
+  people   Int
+  table_id Int      @unique
+  table    Table    @relation(fields: [table_id], references: [id])
+
+  @@map("reservations")
+}
+
+model Expense {
+  id        Int      @id @default(autoincrement())
+  title     String
+  amount    Decimal
+  category  String // e.g., rent, utilities, wages, maintenance
+  note      String? // optional description
+  paid_at   DateTime @default(now())
+  user_id   Int // who logged the expense
+  user      User     @relation(fields: [user_id], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("expenses")
+}
+
+model Discount {
+  id         Int      @id @default(autoincrement())
+  code       String   @unique
+  type       String // 'percent' or 'fixed'
+  value      Decimal
+  start_date DateTime
+  end_date   DateTime
+  is_active  Boolean  @default(true)
+
+  @@map("discounts")
 }

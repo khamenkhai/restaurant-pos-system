@@ -11,6 +11,7 @@ CREATE TABLE "products" (
     "price" INTEGER NOT NULL,
     "is_gram" BOOLEAN NOT NULL DEFAULT false,
     "category_id" INTEGER NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("id")
 );
@@ -22,6 +23,7 @@ CREATE TABLE "product_variants" (
     "name" TEXT NOT NULL,
     "description" TEXT,
     "price" INTEGER,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "product_variants_pkey" PRIMARY KEY ("id")
 );
@@ -31,6 +33,7 @@ CREATE TABLE "categories" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
 );
@@ -41,6 +44,7 @@ CREATE TABLE "users" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -50,6 +54,7 @@ CREATE TABLE "tables" (
     "id" SERIAL NOT NULL,
     "table_no" TEXT NOT NULL,
     "status" "TableStatus" NOT NULL DEFAULT 'available',
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "tables_pkey" PRIMARY KEY ("id")
 );
@@ -57,6 +62,7 @@ CREATE TABLE "tables" (
 -- CreateTable
 CREATE TABLE "orders" (
     "id" SERIAL NOT NULL,
+    "uuid" TEXT NOT NULL,
     "table_id" INTEGER NOT NULL,
     "user_id" INTEGER NOT NULL,
     "tax" DECIMAL(65,30) NOT NULL,
@@ -70,6 +76,28 @@ CREATE TABLE "orders" (
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "orders_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "payment_methods" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "image" TEXT,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "payment_methods_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "payments" (
+    "id" SERIAL NOT NULL,
+    "order_id" INTEGER NOT NULL,
+    "amount" DECIMAL(65,30) NOT NULL,
+    "paid_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "notes" TEXT,
+    "payment_method_id" INTEGER NOT NULL,
+
+    CONSTRAINT "payments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -102,6 +130,12 @@ CREATE UNIQUE INDEX "categories_name_key" ON "categories"("name");
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "payment_methods_name_key" ON "payment_methods"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "payments_order_id_key" ON "payments"("order_id");
+
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -116,6 +150,12 @@ ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id"
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_buffet_id_fkey" FOREIGN KEY ("buffet_id") REFERENCES "buffets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payments" ADD CONSTRAINT "payments_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payments" ADD CONSTRAINT "payments_payment_method_id_fkey" FOREIGN KEY ("payment_method_id") REFERENCES "payment_methods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
