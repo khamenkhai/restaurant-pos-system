@@ -21,3 +21,17 @@ export const CreateBuffetOrderSchema = z.object({
   people_count: z.number().min(1),
   tax: z.number().optional(),
 });
+
+
+export const createReservationSchema = z.object({
+  name: z.string().min(1, { message: 'Name is required' }),
+  phone: z.string().min(7, { message: 'Phone number is too short' }),
+  date: z.union([
+    z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: 'Invalid date format',
+    }),
+    z.date()
+  ]),
+  people: z.number().int().positive({ message: 'People must be a positive integer' }),
+  table_id: z.number().int().positive({ message: 'Table ID must be a positive integer' }),
+});

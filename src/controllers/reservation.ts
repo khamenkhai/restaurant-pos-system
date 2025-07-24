@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { prismaClient } from '../utils/prismaClient';
 import { sendResponse } from '../utils/response';
+import { createReservationSchema } from '../validators/schema';
 
 export const createReservation = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name, phone, date, people, table_id } = req.body;
+        // const { name, phone, date, people, table_id } = req.body;
+
+        const parsedData = createReservationSchema.parse(req.body);
 
         const reservation = await prismaClient.reservation.create({
             data: {
-                name,
-                phone,
-                date: new Date(date),
-                people,
-                table_id,
+                ...parsedData,
+                date: new Date(parsedData.date), // ensure Date object
             },
         });
 
